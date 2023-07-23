@@ -22,6 +22,9 @@ st.set_page_config(page_title="LOTUS LZ4 searcher", page_icon=":lotus:", layout=
 def load_data():
     return pickle.load(open("data/structures_lz4.pkl", "rb"))
 
+@st.cache_data(ttl=3600)
+def readme():
+    return "".join([line for line in open("README.md").readlines() if not line.startswith(" ")])
 
 structure_db = load_data()
 
@@ -61,8 +64,10 @@ def render_svg(svg):
 
 st.title("LOTUS LZ4 searcher")
 with st.expander("About"):
-    st.markdown(open("README.md").read())
+    st.markdown(readme())
 
+
+st.write("Choose an example, or type your SMILES below")
 c1, c2, c3, c4 = st.columns(4)
 
 amarogentin = "C=C[C@@H]1[C@@H]2CCOC(=O)C2=CO[C@H]1O[C@H]3[C@@H]([C@H]([C@@H]([C@H](O3)CO)O)O)OC(=O)C4=C(C=C(C=C4C5=CC(=CC=C5)O)O)O"

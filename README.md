@@ -1,3 +1,5 @@
+ This application is available on [Streamlit](https://lotus-lz4.streamlit.app/)
+
 This is a really quick and dirty experiment for using lz4 and Tucan to find similar molecules.
 
 The code of this is on my alter-github account: https://github.com/bjonnh-streamlit/mol_search
