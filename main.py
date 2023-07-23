@@ -55,6 +55,7 @@ def render_svg(svg):
     html = r'<img src="data:image/svg+xml;base64,%s"/>' % b64
     st.write(html, unsafe_allow_html=True)
 
+st.set_page_config(page_title="LOTUS LZ4 searcher", page_icon=":lotus:", layout="centered", initial_sidebar_state="auto", menu_items=None)
 
 st.title("LOTUS LZ4 searcher")
 with st.expander("About"):
@@ -80,14 +81,18 @@ if query != "":
         fig, ax = plt.subplots()
         ax.hist([score[1] for score in scores], bins=20)
         st.write("Histogram of LZ4 scores (you want to put your level way before the peak on the left!")
-        st.pyplot(fig)
+
+        st.pyplot(fig, use_container_width=True)
 
         for result in sorted_results:
             st.divider()
             m = smiles[result[0]]
             render_svg(molecule_svg(m))
             st.markdown(f"[Link to Wikidata](http://www.wikidata.org/entity/{links[result[0]]})")
-            st.write(f"{m} - score: {result[1]}")
+
+            st.text(m)
+
+            st.progress(1-result[1], text="Similarity: {:.2f}".format(result[1]))
 
     except Exception as e:
-        st.error(f"Your molecule is likely invalid.")
+        st.error(f"Your molecule is likely invalid. {e}")
