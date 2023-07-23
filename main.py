@@ -64,37 +64,45 @@ with st.expander("About"):
 
 query = st.text_input(label="SMILES (short ones work really really badly you've been warned)",
                       value="O=c1c(O)c(-c2ccc(O)c(O)c2)oc2cc(O)cc(O)c12")
-level = st.slider("Level (lower means tighter search)", min_value=0.0, max_value=0.8, value=0.3, step=0.01)
+levelc = st.container()
+
 st.write(
     "The free plan of streamlit is a bit memory limited so we will only show you 100 matches. If you run it locally you can see all of them.")
-if query != "":
-    start = time.time()
-    try:
-        render_svg(molecule_svg(query))
-        scores = search(query)
 
+start = time.time()
+try:
+    render_svg(molecule_svg(query))
+    scores = search(query)
+    st.header("Results")
+    resultc = st.container()
+
+    fig, ax = plt.subplots()
+    ax.hist([score[1] for score in scores], bins=20)
+    st.write("Histogram of LZ4 scores (you want to put your level way before the peak on the left!")
+
+    st.pyplot(fig, use_container_width=True)
+
+    with levelc:
+        level = st.slider("Level (lower means tighter search)", min_value=0.0, max_value=0.8, value=0.3, step=0.01)
+    with resultc:
         results = [score for score in scores if score[1] < level]
         count = len(results)
         sorted_results = sorted(results, key=lambda x: x[1])[0:100]
-        st.header("Results")
         st.write(
             f"Search time: {time.time() - start:.2f}s with {count} matches")
-        fig, ax = plt.subplots()
-        ax.hist([score[1] for score in scores], bins=20)
-        st.write("Histogram of LZ4 scores (you want to put your level way before the peak on the left!")
 
-        st.pyplot(fig, use_container_width=True)
 
-        for result in sorted_results:
-            st.divider()
-            m = structure_db["smiles"][result[0]]
-            render_svg(molecule_svg(m))
-            wid = structure_db["links"][result[0]]
-            st.markdown(f"[Link to Wikidata](http://www.wikidata.org/entity/{wid})")
 
-            st.text(m)
+    for result in sorted_results:
+        st.divider()
+        m = structure_db["smiles"][result[0]]
+        render_svg(molecule_svg(m))
+        wid = structure_db["links"][result[0]]
+        st.markdown(f"[Link to Wikidata](http://www.wikidata.org/entity/{wid})")
 
-            st.progress(1 - result[1], text="Distance: {:.2f}".format(result[1]))
+        st.text(m)
 
-    except Exception as e:
-        st.error(f"Your molecule is likely invalid.")
+        st.progress(1 - result[1], text="Distance: {:.2f}".format(result[1]))
+
+except Exception as e:
+    st.error(f"Your molecule is likely invalid.")
