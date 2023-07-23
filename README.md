@@ -1,13 +1,11 @@
- This application is available on [Streamlit](https://lotus-lz4.streamlit.app/)
+ This application is available on [Streamlit](https://lotus-tanimoto.streamlit.app/)
 
-This is a really quick and dirty experiment for using lz4 and Tucan to find similar molecules.
+I had a really quick and dirty experiment for using lz4 and Tucan to find similar molecules, this is the version
+using standard tanimoto and fingerprints from Rdkit.
 
 The code of this is on my alter-github account: https://github.com/bjonnh-streamlit/mol_search
 
 The dataset is from the [LOTUS](https://lotus.nprod.net/) database and [Wikidata](https://www.wikidata.org).
-
-- LZ4: https://github.com/lz4/lz4
-- Tucan: https://github.com/TUCAN-nest/TUCAN
 
 The idea to use Tucan and play with all that came from [Adriano Rutz](https://adafede.github.io/), we are both
 part of the team behind LOTUS.

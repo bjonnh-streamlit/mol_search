@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 import base64
+import bz2
 import pickle
 import time
 
-import lz4.frame
 import streamlit as st
 from matplotlib import pyplot as plt
-from rdkit import Chem
+from rdkit import Chem, DataStructs
+from rdkit.Chem import AllChem
 from rdkit.Chem.Draw import rdMolDraw2D
-from tucan.canonicalization import canonicalize_molecule
-from tucan.io import graph_from_molfile_text
-from tucan.serialization import serialize_molecule
 
 start = time.time()
-
-st.set_page_config(page_title="LOTUS LZ4 searcher", page_icon=":lotus:", layout="centered",
+fpgen = AllChem.GetRDKitFPGenerator()
+st.set_page_config(page_title="LOTUS Tanimoto searcher", page_icon=":lotus:", layout="centered",
                    initial_sidebar_state="auto", menu_items=None)
 
 
 @st.cache_data(ttl=3600)
 def load_data():
-    return pickle.load(open("data/structures_lz4.pkl", "rb"))
+    with bz2.open("data/structure_fps.pkl.bz2", "rb") as f:
+        return pickle.loads(f.read())
 
 
 @st.cache_data(ttl=3600)
@@ -31,38 +30,16 @@ def readme():
 structure_db = load_data()
 
 
-def tucanize(smiles: str) -> bytes:
-    mol = Chem.MolFromSmiles(smiles)
-    m = Chem.MolToMolBlock(mol)
-    molecule = graph_from_molfile_text(m)
-    canonical_molecule = canonicalize_molecule(molecule)
-    return serialize_molecule(canonical_molecule).encode("utf-8")
-
-
-def get_self_tucan_score(tucan: bytes) -> float:
-    tucanlz4 = len(lz4.frame.compress(tucan))
-    lc = len(lz4.frame.compress((tucan + tucan)))
-    return lc / tucanlz4 - 1
-
-
-def search(tucan1: bytes):
-    tucanlz4_1 = len(lz4.frame.compress(tucan1))
-
+def search(fp: bytes) -> list[tuple[int, float]]:
     out = []
-    for j in range(len(structure_db["tucans"])):
-        tucan2 = structure_db["tucans"][j]
-        tucanlz4_2 = structure_db["tucanlz4s"][j]
-
-        lc = len(lz4.frame.compress((tucan1 + tucan2)))
-        tucanlz4_score = (lc - min(tucanlz4_2, tucanlz4_1)) / max(tucanlz4_2, tucanlz4_1)
-
-        out.append((j, tucanlz4_score))
+    for j, fp2 in enumerate(structure_db["fps"]):
+        out.append((j, DataStructs.TanimotoSimilarity(fp, fp2)))
     return out
 
 
-def molecule_svg(smiles):
+def molecule_svg(mol):
     d2d = rdMolDraw2D.MolDraw2DSVG(250, 200)
-    d2d.DrawMolecule(Chem.MolFromSmiles(smiles))
+    d2d.DrawMolecule(mol)
     d2d.FinishDrawing()
     return d2d.GetDrawingText()
 
@@ -73,7 +50,7 @@ def render_svg(svg):
     st.write(html, unsafe_allow_html=True)
 
 
-st.title("LOTUS LZ4 searcher")
+st.title("LOTUS Tanimoto searcher")
 with st.expander("About"):
     st.markdown(readme())
 
@@ -100,44 +77,40 @@ query = st.text_input(label="SMILES (short ones work really really badly you've 
                       key="input_query")
 
 try:
-    render_svg(molecule_svg(query))
-    tucan1 = tucanize(query)
-    self_tucan_score = get_self_tucan_score(tucan1)
-    scores = search(tucan1)
+    mol = Chem.MolFromSmiles(query)
+    render_svg(molecule_svg(mol))
+
+    scores = search(fpgen.GetFingerprint(mol))
     fig, ax = plt.subplots()
     ax.hist([score[1] for score in scores], bins=20)
-    st.write("Histogram of LZ4 scores (you want to put your level way before the peak on the left!")
+    st.write("Histogram of tanimoto scores (you want to put your level way before the peak on the left!")
 
     st.pyplot(fig, use_container_width=True)
-    level = st.slider("Level (lower means tighter search)", min_value=0.0, max_value=0.8, value=0.3, step=0.01)
+    level = st.slider("Level (higher means tighter search)", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
 
     st.write(
         "The free plan of streamlit is a bit memory limited (but it is still the best out there with its 1GB)"
         " so we will only show you 100 matches. If you run it locally you can see all of them.")
 
-    if self_tucan_score > 0.05:
-        st.error(f"Your molecule has a really high Self-Tucan-LZ4 score of {self_tucan_score:.2f}, the search will not work well.")
-    else:
-        st.write(f"Self_tucan_score: {self_tucan_score:.2f}")
     start = time.time()
 
     st.header("Results")
-    results = [score for score in scores if score[1] < level]
+    results = [score for score in scores if score[1] >= level]
     count = len(results)
-    sorted_results = sorted(results, key=lambda x: x[1])[0:100]
+    sorted_results = sorted(results, reverse=True, key=lambda x: x[1])[0:100]
     st.write(
         f"Search time: {time.time() - start:.2f}s with {count} matches")
 
     for result in sorted_results:
         st.divider()
         m = structure_db["smiles"][result[0]]
-        render_svg(molecule_svg(m))
+        render_svg(molecule_svg(Chem.MolFromSmiles(m)))
         wid = structure_db["links"][result[0]]
         st.markdown(f"[Link to Wikidata](http://www.wikidata.org/entity/{wid})")
 
         st.text(m)
 
-        st.progress(1 - result[1], text="Distance: {:.2f}".format(result[1]))
+        st.progress(result[1], text="Tanimoto similarity: {:.2f}".format(result[1]))
 
 except Exception as e:
-    st.error(f"Your molecule is likely invalid.")
+    st.error(f"Your molecule is likely invalid. {e}")
