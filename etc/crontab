@@ -1,0 +1,2 @@
+# m h  dom mon dow   command
+0 5  * * *  /home/bjo/molecule_search/cron_job.sh
