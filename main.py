@@ -14,14 +14,16 @@ from tucan.serialization import serialize_molecule
 
 start = time.time()
 
-structure_db = pickle.load(open("data/structures_lz4.pkl", "rb"))
-smiles = structure_db["smiles"]
-tucans = structure_db["tucans"]
-tucanlz4s = structure_db["tucanlz4s"]
-links = structure_db["links"]
+st.set_page_config(page_title="LOTUS LZ4 searcher", page_icon=":lotus:", layout="centered",
+                   initial_sidebar_state="auto", menu_items=None)
 
-end_dl_time = time.time()
 
+@st.cache_data(ttl=3600)
+def load_data():
+    return pickle.load(open("data/structures_lz4.pkl", "rb"))
+
+
+structure_db = load_data()
 
 def search(smiles):
     mol = Chem.MolFromSmiles(smiles)
@@ -32,9 +34,9 @@ def search(smiles):
     tucanlz4_1 = len(lz4.frame.compress(tucan1))
 
     out = []
-    for j in range(len(tucans)):
-        tucan2 = tucans[j]
-        tucanlz4_2 = tucanlz4s[j]
+    for j in range(len(structure_db["tucans"])):
+        tucan2 = structure_db["tucans"][j]
+        tucanlz4_2 = structure_db["tucanlz4s"][j]
 
         lc = len(lz4.frame.compress((tucan1 + tucan2)))
         tucanlz4_score = (lc - min(tucanlz4_2, tucanlz4_1)) / max(tucanlz4_2, tucanlz4_1)
@@ -55,9 +57,6 @@ def render_svg(svg):
     html = r'<img src="data:image/svg+xml;base64,%s"/>' % b64
     st.write(html, unsafe_allow_html=True)
 
-
-st.set_page_config(page_title="LOTUS LZ4 searcher", page_icon=":lotus:", layout="centered",
-                   initial_sidebar_state="auto", menu_items=None)
 
 st.title("LOTUS LZ4 searcher")
 with st.expander("About"):
@@ -88,9 +87,10 @@ if query != "":
 
         for result in sorted_results:
             st.divider()
-            m = smiles[result[0]]
+            m = structure_db["smiles"][result[0]]
             render_svg(molecule_svg(m))
-            st.markdown(f"[Link to Wikidata](http://www.wikidata.org/entity/{links[result[0]]})")
+            wid = structure_db["links"][result[0]]
+            st.markdown(f"[Link to Wikidata](http://www.wikidata.org/entity/{wid})")
 
             st.text(m)
 
