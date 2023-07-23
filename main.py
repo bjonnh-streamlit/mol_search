@@ -67,7 +67,8 @@ query = st.text_input(label="SMILES (short ones work really really badly you've 
 levelc = st.container()
 
 st.write(
-    "The free plan of streamlit is a bit memory limited so we will only show you 100 matches. If you run it locally you can see all of them.")
+    "The free plan of streamlit is a bit memory limited (but it is still the best out there with its 1GB)"
+    " so we will only show you 100 matches. If you run it locally you can see all of them.")
 
 start = time.time()
 try:
