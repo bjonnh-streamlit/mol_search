@@ -12,6 +12,7 @@ rdkit = "^2023.3.2"
 streamlit = "^1.25.0"
 lz4 = "^4.3.2"
 matplotlib = "^3.4.3"
+streamlit_ketcher = "^0.0.1"
 
 [build-system]
 requires = ["poetry-core"]

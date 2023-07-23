@@ -1316,6 +1316,20 @@ watchdog = {version = ">=2.1.5", markers = "platform_system != \"Darwin\""}
 snowflake = ["snowflake-snowpark-python"]
 
 [[package]]
+name = "streamlit-ketcher"
+version = "0.0.1"
+description = "Ketcher editor component for Streamlit."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "streamlit_ketcher-0.0.1-py3-none-any.whl", hash = "sha256:b8e944e06e938c0b072ed013444d68213d807e224d96f5b1d6be39658ff6233a"},
+    {file = "streamlit_ketcher-0.0.1.tar.gz", hash = "sha256:bb6201f28fc3020579c74d56bc819d1ed99af3430cf164fb964f6adbdd0e8b89"},
+]
+
+[package.dependencies]
+streamlit = ">=1.0.0"
+
+[[package]]
 name = "tenacity"
 version = "8.2.2"
 description = "Retry code until it succeeds"
@@ -1501,4 +1515,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "554b51944411cf47cbe6cf79cdb697f9b472e911615f19ab09ef4f56870a436f"
+content-hash = "5aee58e99b533eefa4ea936fba258210f12cb492f88169c065f0a01f4d7677f0"

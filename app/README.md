@@ -9,6 +9,7 @@ The dataset is from the [LOTUS](https://lotus.nprod.net/) database and [Wikidata
 [Adriano Rutz](https://adafede.github.io/), is the one that pushed me into that, we are both part of the team behind LOTUS.
 
 It is using [Streamlit](https://streamlit.io)  for its web ui.
+And [EPAM's Ketcher](https://lifescience.opensource.epam.com/ketcher/index.html?ref=blog.streamlit.io) for the molecule editor.
 
 [Rdkit](https://www.rdkit.org) is used for the molecule massaging.
 
