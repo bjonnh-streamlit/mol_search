@@ -18,6 +18,8 @@ st.set_page_config(page_title="LOTUS LZ4 searcher", page_icon=":lotus:", layout=
                    initial_sidebar_state="auto", menu_items=None)
 
 
+st.error("If you want a real and more stable interface to search LOTUS, go to https://search.nprod.net/")
+
 @st.cache_data(ttl=3600)
 def load_data():
     return pickle.load(open("data/structures_lz4.pkl", "rb"))
