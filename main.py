@@ -25,6 +25,7 @@ def load_data():
 
 structure_db = load_data()
 
+
 def search(smiles):
     mol = Chem.MolFromSmiles(smiles)
     m = Chem.MolToMolBlock(mol)
@@ -61,9 +62,21 @@ def render_svg(svg):
 st.title("LOTUS LZ4 searcher")
 with st.expander("About"):
     st.markdown(open("README.md").read())
+val = None
+
+c1, c2, c3, c4 = st.columns(4)
+
+if c1.button("Amarogentin"):
+    val = "C=C[C@@H]1[C@@H]2CCOC(=O)C2=CO[C@H]1O[C@H]3[C@@H]([C@H]([C@@H]([C@H](O3)CO)O)O)OC(=O)C4=C(C=C(C=C4C5=CC(=CC=C5)O)O)O"
+if c2.button("Quassin"):
+    val = "C[C@@H]1C=C(C(=O)[C@]2([C@H]1C[C@@H]3[C@@]4([C@@H]2C(=O)C(=C([C@@H]4CC(=O)O3)C)OC)C)C)OC"
+if c3.button("Absinthin"):
+    val = "C[C@H]1[C@@H]2CC[C@]([C@@H]3[C@H]4[C@H]5C=C([C@@]6([C@H]4C(=C3[C@H]2OC1=O)C)[C@@H]5[C@@](CC[C@@H]7[C@@H]6OC(=O)[C@H]7C)(C)O)C)(C)O"
+if c4.button("Quinine"):
+    val = "COC1=CC2=C(C=CN=C2C=C1)[C@H]([C@@H]3C[C@@H]4CCN3C[C@@H]4C=C)O"
 
 query = st.text_input(label="SMILES (short ones work really really badly you've been warned)",
-                      value="O=c1c(O)c(-c2ccc(O)c(O)c2)oc2cc(O)cc(O)c12")
+                      value=val or "O=c1c(O)c(-c2ccc(O)c(O)c2)oc2cc(O)cc(O)c12")
 levelc = st.container()
 
 st.write(
@@ -91,8 +104,6 @@ try:
         sorted_results = sorted(results, key=lambda x: x[1])[0:100]
         st.write(
             f"Search time: {time.time() - start:.2f}s with {count} matches")
-
-
 
     for result in sorted_results:
         st.divider()
