@@ -95,4 +95,4 @@ if query != "":
             st.progress(1-result[1], text="Similarity: {:.2f}".format(result[1]))
 
     except Exception as e:
-        st.error(f"Your molecule is likely invalid. {e}")
+        st.error(f"Your molecule is likely invalid.")
