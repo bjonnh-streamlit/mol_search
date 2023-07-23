@@ -6,7 +6,7 @@ import csv
 
 from concurrent.futures import ProcessPoolExecutor
 
-from smiles_process import process_smiles
+from processor import process_smiles
 
 start = time.time()
 

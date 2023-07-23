@@ -12,6 +12,8 @@ from tucan.canonicalization import canonicalize_molecule
 from tucan.io import graph_from_molfile_text
 from tucan.serialization import serialize_molecule
 
+from processor import microtucan, tucanize
+
 start = time.time()
 
 st.set_page_config(page_title="LOTUS LZ4 searcher", page_icon=":lotus:", layout="centered",
@@ -31,21 +33,15 @@ def readme():
 structure_db = load_data()
 
 
-def tucanize(smiles: str) -> bytes:
-    mol = Chem.MolFromSmiles(smiles)
-    m = Chem.MolToMolBlock(mol)
-    molecule = graph_from_molfile_text(m)
-    canonical_molecule = canonicalize_molecule(molecule)
-    return serialize_molecule(canonical_molecule).encode("utf-8")
-
-
-def get_self_tucan_score(tucan: bytes) -> float:
+def get_self_tucan_score(tucan_str: str) -> float:
+    tucan = microtucan(tucan_str)
     tucanlz4 = len(lz4.frame.compress(tucan))
     lc = len(lz4.frame.compress((tucan + tucan)))
     return lc / tucanlz4 - 1
 
 
-def search(tucan1: bytes):
+def search(tucan: str):
+    tucan1 = microtucan(tucan) #.encode("utf-8")
     tucanlz4_1 = len(lz4.frame.compress(tucan1))
 
     out = []
@@ -140,4 +136,4 @@ try:
         st.progress(1 - result[1], text="Distance: {:.2f}".format(result[1]))
 
 except Exception as e:
-    st.error(f"Your molecule is likely invalid.")
+    st.error(f"Your molecule is likely invalid. {e}")
