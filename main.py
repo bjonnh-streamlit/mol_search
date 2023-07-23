@@ -94,40 +94,41 @@ try:
     mol = standardize(Chem.MolFromSmiles(query))
     render_svg(molecule_svg(mol))
     fp = fingerprint(mol)
-    if ss_mode:
-        scores = ss_search(fp, mol)
-    else:
-        scores = search(fp)
-        fig, ax = plt.subplots()
-        ax.hist([score[1] for score in scores], bins=20)
-        st.write("Histogram of tanimoto scores (you want to put your level way before the peak on the left!")
+    with st.spinner("Searching..."):
+        if ss_mode:
+            scores = ss_search(fp, mol)
+        else:
+            scores = search(fp)
+            fig, ax = plt.subplots()
+            ax.hist([score[1] for score in scores], bins=20)
+            st.write("Histogram of tanimoto scores (you want to put your level way before the peak on the left!")
 
-        st.pyplot(fig, use_container_width=True)
-        level = st.slider("Level (higher means tighter search)", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
-        scores = [score for score in scores if score[1] >= level]
-    st.header("Results")
-    st.write(
-        "The free plan of streamlit is a bit memory limited (but it is still the best out there with its 1GB)"
-        " so we will only show you 100 matches. If you run it locally you can see all of them.")
+            st.pyplot(fig, use_container_width=True)
+            level = st.slider("Level (higher means tighter search)", min_value=0.0, max_value=1.0, value=0.8, step=0.01)
+            scores = [score for score in scores if score[1] >= level]
+        st.header("Results")
+        st.write(
+            "The free plan of streamlit is a bit memory limited (but it is still the best out there with its 1GB)"
+            " so we will only show you 100 matches. If you run it locally you can see all of them.")
 
-    start = time.time()
+        start = time.time()
 
-    count = len(scores)
-    scores = sorted(scores, reverse=True, key=lambda x: x[1])
+        count = len(scores)
+        scores = sorted(scores, reverse=True, key=lambda x: x[1])
 
-    scores = scores[0:100]
-    st.write(f"Search time: {time.time() - start:.2f}s with {count} matches")
+        scores = scores[0:100]
+        st.write(f"Search time: {time.time() - start:.2f}s with {count} matches")
 
-    for result in scores:
-        st.divider()
-        m = structure_db["smileses"][result[0]]
-        render_svg(molecule_svg(structure_db["library"].GetMol(result[0])))
-        wid = structure_db["links"][result[0]]
-        st.markdown(f"[Link to Wikidata](http://www.wikidata.org/entity/{wid})")
+        for result in scores:
+            st.divider()
+            m = structure_db["smileses"][result[0]]
+            render_svg(molecule_svg(structure_db["library"].GetMol(result[0])))
+            wid = structure_db["links"][result[0]]
+            st.markdown(f"[Link to Wikidata](http://www.wikidata.org/entity/{wid})")
 
-        st.text(m)
+            st.text(m)
 
-        st.progress(result[1], text="Tanimoto similarity: {:.2f}".format(result[1]))
+            st.progress(result[1], text="Tanimoto similarity: {:.2f}".format(result[1]))
 
 except Exception as e:
     st.error(f"Your molecule is likely invalid. {e}")
