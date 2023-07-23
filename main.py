@@ -55,7 +55,9 @@ def render_svg(svg):
     html = r'<img src="data:image/svg+xml;base64,%s"/>' % b64
     st.write(html, unsafe_allow_html=True)
 
-st.set_page_config(page_title="LOTUS LZ4 searcher", page_icon=":lotus:", layout="centered", initial_sidebar_state="auto", menu_items=None)
+
+st.set_page_config(page_title="LOTUS LZ4 searcher", page_icon=":lotus:", layout="centered",
+                   initial_sidebar_state="auto", menu_items=None)
 
 st.title("LOTUS LZ4 searcher")
 with st.expander("About"):
@@ -92,7 +94,7 @@ if query != "":
 
             st.text(m)
 
-            st.progress(1-result[1], text="Similarity: {:.2f}".format(result[1]))
+            st.progress(1 - result[1], text="Similarity: {:.2f}".format(result[1]))
 
     except Exception as e:
         st.error(f"Your molecule is likely invalid.")
