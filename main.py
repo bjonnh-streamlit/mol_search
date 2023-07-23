@@ -94,7 +94,7 @@ if query != "":
 
             st.text(m)
 
-            st.progress(1 - result[1], text="Similarity: {:.2f}".format(result[1]))
+            st.progress(1 - result[1], text="Distancek: {:.2f}".format(result[1]))
 
     except Exception as e:
         st.error(f"Your molecule is likely invalid.")
