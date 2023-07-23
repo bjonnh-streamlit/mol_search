@@ -22,19 +22,30 @@ st.set_page_config(page_title="LOTUS LZ4 searcher", page_icon=":lotus:", layout=
 def load_data():
     return pickle.load(open("data/structures_lz4.pkl", "rb"))
 
+
 @st.cache_data(ttl=3600)
 def readme():
     return "".join([line for line in open("README.md").readlines() if not line.startswith(" ")])
 
+
 structure_db = load_data()
 
 
-def search(smiles):
+def tucanize(smiles: str) -> bytes:
     mol = Chem.MolFromSmiles(smiles)
     m = Chem.MolToMolBlock(mol)
     molecule = graph_from_molfile_text(m)
     canonical_molecule = canonicalize_molecule(molecule)
-    tucan1 = serialize_molecule(canonical_molecule).encode("utf-8")
+    return serialize_molecule(canonical_molecule).encode("utf-8")
+
+
+def get_self_tucan_score(tucan: bytes) -> float:
+    tucanlz4 = len(lz4.frame.compress(tucan))
+    lc = len(lz4.frame.compress((tucan + tucan)))
+    return lc / tucanlz4 - 1
+
+
+def search(tucan1: bytes):
     tucanlz4_1 = len(lz4.frame.compress(tucan1))
 
     out = []
@@ -66,7 +77,6 @@ st.title("LOTUS LZ4 searcher")
 with st.expander("About"):
     st.markdown(readme())
 
-
 st.write("Choose an example, or type your SMILES below")
 c1, c2, c3, c4 = st.columns(4)
 
@@ -78,20 +88,22 @@ if "input_query" not in st.session_state:
 if c1.button("Amarogentin"):
     st.session_state["input_query"] = amarogentin
 if c2.button("Quassin"):
-    st.session_state["input_query"] = "C[C@@H]1C=C(C(=O)[C@]2([C@H]1C[C@@H]3[C@@]4([C@@H]2C(=O)C(=C([C@@H]4CC(=O)O3)C)OC)C)C)OC"
+    st.session_state[
+        "input_query"] = "C[C@@H]1C=C(C(=O)[C@]2([C@H]1C[C@@H]3[C@@]4([C@@H]2C(=O)C(=C([C@@H]4CC(=O)O3)C)OC)C)C)OC"
 if c3.button("Absinthin"):
-    st.session_state["input_query"] = "C[C@H]1[C@@H]2CC[C@]([C@@H]3[C@H]4[C@H]5C=C([C@@]6([C@H]4C(=C3[C@H]2OC1=O)C)[C@@H]5[C@@](CC[C@@H]7[C@@H]6OC(=O)[C@H]7C)(C)O)C)(C)O"
+    st.session_state[
+        "input_query"] = "C[C@H]1[C@@H]2CC[C@]([C@@H]3[C@H]4[C@H]5C=C([C@@]6([C@H]4C(=C3[C@H]2OC1=O)C)[C@@H]5[C@@](CC[C@@H]7[C@@H]6OC(=O)[C@H]7C)(C)O)C)(C)O"
 if c4.button("Quinine"):
     st.session_state["input_query"] = "COC1=CC2=C(C=CN=C2C=C1)[C@H]([C@@H]3C[C@@H]4CCN3C[C@@H]4C=C)O"
 
 query = st.text_input(label="SMILES (short ones work really really badly you've been warned)",
-                            key="input_query")
-
-
+                      key="input_query")
 
 try:
     render_svg(molecule_svg(query))
-    scores = search(query)
+    tucan1 = tucanize(query)
+    self_tucan_score = get_self_tucan_score(tucan1)
+    scores = search(tucan1)
     fig, ax = plt.subplots()
     ax.hist([score[1] for score in scores], bins=20)
     st.write("Histogram of LZ4 scores (you want to put your level way before the peak on the left!")
@@ -103,8 +115,11 @@ try:
         "The free plan of streamlit is a bit memory limited (but it is still the best out there with its 1GB)"
         " so we will only show you 100 matches. If you run it locally you can see all of them.")
 
+    if self_tucan_score > 0.05:
+        st.error(f"Your molecule has a really high Self-Tucan-LZ4 score of {self_tucan_score:.2f}, the search will not work well.")
+    else:
+        st.write(f"Self_tucan_score: {self_tucan_score:.2f}")
     start = time.time()
-
 
     st.header("Results")
     results = [score for score in scores if score[1] < level]
