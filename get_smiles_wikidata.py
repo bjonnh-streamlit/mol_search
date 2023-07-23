@@ -7,9 +7,12 @@ start = time.time()
 
 url = "https://query.wikidata.org/sparql"
 query = """
-SELECT DISTINCT ?structure ?structure_smiles WHERE {
+SELECT DISTINCT ?structure ?structure_smiles ?canonical_smiles WHERE {
     ?structure wdt:P703 ?taxon;
-               wdt:P2017 ?structure_smiles.
+               wdt:P233 ?canonical_smiles.
+    OPTIONAL {
+        ?structure wdt:P2017 ?structure_smiles.
+    }
 }
 """
 
