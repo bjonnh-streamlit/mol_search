@@ -14,7 +14,8 @@ It is using [Streamlit](https://streamlit.io)  for its web ui.
 
 [Rdkit](https://www.rdkit.org) is used for the molecule massaging.
 
-See those other projects for more information on why I am trying that:
+See those other projects for more information on why I am trying that (and Daniel's work is what started me on that
+contraption):
 
 - https://github.com/daenuprobst/molzip
 - https://arxiv.org/abs/2212.09410
@@ -27,5 +28,21 @@ To reproduce:
 - Run `streamlit run main.py`   (almost instant)
 
 
-My personal website: https://www.bjonnh.net
-You can find me on mastodon too(t): https://mastodon.social/@bjonnh
+## **Me**
+
+- Personal website: https://www.bjonnh.net
+- You can find me on mastodon too(t): https://mastodon.social/@bjonnh
+
+
+## **Data safety**
+
+Your molecules are never stored, the only people that could eventually see them are the streamlit people. 
+And I doubt they care about your molecules. But if your molecules are super secret, it is like extremities don't insert 
+them in machines you don't know or understand.
+
+Also, this is an experimental tool meant to test things, you're not supposed to rely on it for anything important, and
+it comes with no warranty or support whatsoever.
+
+## **License and legalese**
+
+https://raw.githubusercontent.com/bjonnh-streamlit/mol_search/main/LICENSE
