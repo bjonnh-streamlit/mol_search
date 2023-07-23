@@ -31,7 +31,7 @@ with ProcessPoolExecutor(max_workers=max_workers) as executor:
             tucans.append(tucan)
             tucanlz4s.append(tucanlz4)
             processed_smileses.append(smiles)
-            processed_links.append(links[mid])
+            processed_links.append(links[mid].replace("http://www.wikidata.org/entity/", ""))
 
 
 print(f"Precalculations time: {time.time() - start:.2f} s")

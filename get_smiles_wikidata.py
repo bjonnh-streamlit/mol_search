@@ -9,7 +9,7 @@ url = "https://query.wikidata.org/sparql"
 query = """
 SELECT DISTINCT ?structure ?structure_smiles WHERE {
     ?structure wdt:P703 ?taxon;
-               wdt:P233 ?structure_smiles.
+               wdt:P2017 ?structure_smiles.
 }
 """
 
